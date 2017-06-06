@@ -16,12 +16,44 @@ var casper = require('casper').create({
 });
 var url='http://www.zk120.com';
 var utils = require('utils');
-//phantom.outputEncoding='gbk';
+phantom.outputEncoding='gbk';
 
-phantom.outputEncoding="utf-8";
-casper.start(url);
-var a,b;
+ phantom.outputEncoding="utf-8";
+casper.start();
+//暂时不登录
+/* casper.start('http://www.zk120.com/accounts/login?next=/',function () {
+     this.fill('form#login', {username: '13568835491', password: 'cym123'}, false);
+ });
+
+ casper.then(function(){
+    this.click("#login-submit");
+     this.wait(1000,function () {
+         console.log('登陆成功');
+     })
+ });*/
+
+//casper.start(url);
+var tt;
+casper.thenOpen('http://www.zk120.com/an/search?qe=%E6%89%8B%E8%B6%B3%E5%8F%A3%E7%97%85&',function () {
+    tt = this.evaluate(function () {
+        var cc=[];
+        var temp =document.getElementsByClassName("space_pt space_pb space_pr");
+        for (var t in temp) {
+            var href = temp[t].getAttribute('href');
+            cc.push({href:href});
+        }
+        return cc;
+    });
+    console.log("safdddddddddddddddddddddddddd"+tt);
+});
+
 casper.then(function () {
+    casper.wait(2000,function () {
+        console.log("====tt===="+tt);
+    });
+});
+var a,b,content;
+casper.thenOpen(url,function () {
     casper.wait(2000,function(){
         a = casper.evaluate(function() {
             var c=[];
@@ -59,7 +91,51 @@ casper.then(function () {
                     for (var n=0;n<b.length;n++) {
                         var lill = b[n].links;
                         for (var at in lill){
-                            console.log(at+"==="+lill[at].hrefs+"=="+lill[at].titles);
+                            console.log(at+"==="+lill[at].hrefs+"=="+lill[at].titles);//这个地方得到每个超链接的标签
+                            casper.thenOpen(lill[at].hrefs,function () {
+                          /*   content =this.evaluate(function () {
+                                //获取遗尿详情href
+                                var childLinkArr=[];
+                                var childLinkArrs=[];
+                                var childLinks= document.getElementsByClassName("resultItem space_pl space_pr");
+                                for (var i=0;i<childLinks.length;i++) {
+                                    var childHref = childLinks[i].getElementsByTagName("a");
+                                    for (var k =0;k<childHref.length;k++) {
+                                        //得到遗尿详情的href以及title
+                                        var childHref = childHref[k].getAttribute('href');
+                                        var childTitle = childHref[k].innerText;
+                                        childLinkArrs.push({childHref:childHref,childTitle:childTitle})
+                                    }
+                                    childLinkArr.push({childHrefs:childLinkArrs});
+                                }
+                                return childLinkArr;
+                            });*/
+                                content = this.evaluate(function () {
+                                    var cc=[];
+                                    var temp = document.getElementsByClassName("space_pt space_pb space_pr");
+                                    for (var t in temp) {
+                                        var href = temp[t].getAttribute('href');
+                                        var text = temp[t].innerText;
+                                        cc.push({href:href,text:text});
+                                    }
+
+                                    return cc;
+                                });
+                                casper.then(function () {
+                                    this.wait(3000,function () {
+                                        console.log(JSON.stringify(content));
+                                    });
+                                });
+
+
+                          /*  console.log(content.length);
+                            for (var m=0;m<content.length;m++) {
+                                var temp = content[m].childHrefs;
+                                for (var k in temp) {
+                                    console.log(k+"=="+temp[k].childHref+"=="+temp[k].childTitle);
+                                }
+                            }*/
+                            });
                         }
                     }
                 });
