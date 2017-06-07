@@ -12,7 +12,12 @@ var casper = require('casper').create({
         loadPlugins: false         // use these settings
     },
     logLevel:'info',// 为true时，代码执行过程中的日志信息将被输出到本地控制台
-    verbose:true
+    verbose:true,
+    onError: function(self,m){
+        this.capture("error.png");
+        console.log("FATAL:" + m);
+        self.exit();
+    }
 });
 var url='http://www.zk120.com';
 var utils = require('utils');
@@ -33,25 +38,41 @@ casper.start();
  });*/
 
 //casper.start(url);
-var tt;
+/*var tt;
 casper.thenOpen('http://www.zk120.com/an/search?qe=%E6%89%8B%E8%B6%B3%E5%8F%A3%E7%97%85&',function () {
     tt = this.evaluate(function () {
         var cc=[];
-        var temp =document.getElementsByClassName("space_pt space_pb space_pr");
-        for (var t in temp) {
-            var href = temp[t].getAttribute('href');
-            cc.push({href:href});
+        var obj = document.getElementsByClassName("resultItem space_pl space_pr");//resultItem space_pl space_pr
+        for (var i=0;i<obj.length;i++) {
+            var href = obj[i].getAttribute('href');
+            var title = obj[i].innerText;
+            cc.push({href:href,title:title});
         }
         return cc;
     });
-    console.log("safdddddddddddddddddddddddddd"+tt);
-});
-
-casper.then(function () {
-    casper.wait(2000,function () {
-        console.log("====tt===="+tt);
+    this.wait(2000,function () {
+        for (var x in tt) {
+            console.log("sdfaaaaaaaaaaa"+tt[x].href);
+        }
     });
-});
+});*/
+var links;
+function getLinks() {
+    var links=  document.querySelectorAll("ul.resultList li a");
+    return Array.prototype.map.call(links, function (e) {
+        return e.getAttribute('href');
+    });
+}
+/*
+casper.thenOpen('http://www.zk120.com/an/search?qe=%E9%81%97%E5%B0%BF&',function () {
+    links = this.evaluate(getLinks);
+    this.wait(2000,function () {
+        for (var x in links) {
+            console.log("sdfaaaaaaaaaaa"+links[x]);
+        }
+    });
+});*/
+
 var a,b,content;
 casper.thenOpen(url,function () {
     casper.wait(2000,function(){
@@ -90,53 +111,64 @@ casper.thenOpen(url,function () {
                     console.log(JSON.stringify(b));
                     for (var n=0;n<b.length;n++) {
                         var lill = b[n].links;
-                        for (var at in lill){
-                            console.log(at+"==="+lill[at].hrefs+"=="+lill[at].titles);//这个地方得到每个超链接的标签
-                            casper.thenOpen(lill[at].hrefs,function () {
-                          /*   content =this.evaluate(function () {
-                                //获取遗尿详情href
-                                var childLinkArr=[];
-                                var childLinkArrs=[];
-                                var childLinks= document.getElementsByClassName("resultItem space_pl space_pr");
-                                for (var i=0;i<childLinks.length;i++) {
-                                    var childHref = childLinks[i].getElementsByTagName("a");
-                                    for (var k =0;k<childHref.length;k++) {
-                                        //得到遗尿详情的href以及title
-                                        var childHref = childHref[k].getAttribute('href');
-                                        var childTitle = childHref[k].innerText;
-                                        childLinkArrs.push({childHref:childHref,childTitle:childTitle})
-                                    }
-                                    childLinkArr.push({childHrefs:childLinkArrs});
-                                }
-                                return childLinkArr;
-                            });*/
-                                content = this.evaluate(function () {
-                                    var cc=[];
-                                    var temp = document.getElementsByClassName("space_pt space_pb space_pr");
-                                    for (var t in temp) {
-                                        var href = temp[t].getAttribute('href');
-                                        var text = temp[t].innerText;
-                                        cc.push({href:href,text:text});
-                                    }
-
-                                    return cc;
-                                });
-                                casper.then(function () {
-                                    this.wait(3000,function () {
-                                        console.log(JSON.stringify(content));
+                        for (var b=0;b<lill.length;b++) {
+                            var links;
+                            casper.thenOpen(lill[b].hrefs,function () {
+                                links = this.evaluate(function () {
+                                    var links=  document.querySelectorAll("ul.resultList li a");
+                                    return Array.prototype.map.call(links, function (e) {
+                                        return e.getAttribute('href');
                                     });
                                 });
 
+                            });
+                            this.run();
+                            var t;
+                            casper.then(function () {
+                                this.wait(3000,function () {
+                                    for (var x in links){
+                                        console.log("link==="+url+links[x]);//得到遗尿中每个超链接
+                                        //打开每个超链接信息
+                                        casper.thenOpen(url+links[x],function () {
+                                            casper.wait(2000,function () {
+                                                 t = this.evaluate(function () {
+                                                     var temp = document.querySelectorAll("div.space_pl,.space_pr");
+                                                     for (var x in temp) {
+                                                         var c = temp[x].getElementsByTagName("p");
+                                                         for (var xx in c) {
+                                                             casper.then(function () {
+                                                                 console.log("KKKKKKKKKKKKKKK"+c[xx].innerText);
+                                                             });
 
-                          /*  console.log(content.length);
-                            for (var m=0;m<content.length;m++) {
-                                var temp = content[m].childHrefs;
-                                for (var k in temp) {
-                                    console.log(k+"=="+temp[k].childHref+"=="+temp[k].childTitle);
-                                }
-                            }*/
+                                                         }
+                                                     }
+                                                });
+                                            });
+
+                                        });
+                                        this.run();
+                                    }
+                                });
                             });
                         }
+                       /* for (var at in lill){
+                            console.log(at+"======"+lill[at].hrefs+"====="+lill[at].titles);//这个地方得到每个超链接的标签
+                            casper.thenOpen(lill[at].hrefs,function () {
+                                links = casper.evaluate(function () {
+                                    var links=  document.querySelectorAll("ul.resultList li a");
+                                    return Array.prototype.map.call(links, function (e) {
+                                        return e.getAttribute('href');
+                                    });
+                                });
+                            });
+                            casper.then(function () {
+                                this.wait(2000,function () {
+                                    for (var x in links){
+                                        console.log("link==="+links[x]);
+                                    }
+                                });
+                            });
+                        }*/
                     }
                 });
             }
