@@ -73,7 +73,7 @@ casper.thenOpen('http://www.zk120.com/an/search?qe=%E9%81%97%E5%B0%BF&',function
     });
 });*/
 
-var a,b,content;
+var a,b,content,t,tt,ttt;
 casper.thenOpen(url,function () {
     casper.wait(2000,function(){
         a = casper.evaluate(function() {
@@ -123,33 +123,30 @@ casper.thenOpen(url,function () {
 
                             });
                             this.run();
-                            var t;
-                            casper.then(function () {
+                            //casper.then(function () {
                                 this.wait(3000,function () {
                                     for (var x in links){
                                         console.log("link==="+url+links[x]);//得到遗尿中每个超链接
                                         //打开每个超链接信息
                                         casper.thenOpen(url+links[x],function () {
-                                            casper.wait(2000,function () {
-                                                 t = this.evaluate(function () {
-                                                     var temp = document.querySelectorAll("div.space_pl,.space_pr");
-                                                     for (var x in temp) {
-                                                         var c = temp[x].getElementsByTagName("p");
-                                                         for (var xx in c) {
-                                                             casper.then(function () {
-                                                                 console.log("KKKKKKKKKKKKKKK"+c[xx].innerText);
-                                                             });
-
-                                                         }
-                                                     }
+                                                ttt= casper.evaluate(function getProp() {
+                                                    var temps;
+                                                    var temp = $(".space_pl.space_pr p");
+                                                    //console.log(temp.html());
+                                                    for (var i=0;i<temp.length;i++){
+                                                       temps+=temp.eq(i).innerText;
+                                                    }
+                                                    return temps;
                                                 });
-                                            });
+
 
                                         });
                                         this.run();
+                                        console.log("kkkkkkkk"+ttt);
                                     }
                                 });
-                            });
+                            //});
+
                         }
                        /* for (var at in lill){
                             console.log(at+"======"+lill[at].hrefs+"====="+lill[at].titles);//这个地方得到每个超链接的标签
