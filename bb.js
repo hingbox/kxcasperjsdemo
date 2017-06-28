@@ -129,20 +129,12 @@ casper.thenOpen(url,function () {
                                         console.log("link==="+url+links[x]);//得到遗尿中每个超链接
                                         //打开每个超链接信息
                                         casper.thenOpen(url+links[x],function () {
-                                                ttt= casper.evaluate(function getProp() {
-                                                    var temps;
-                                                    var temp = $(".space_pl.space_pr p");
-                                                    //console.log(temp.html());
-                                                    for (var i=0;i<temp.length;i++){
-                                                       temps+=temp.eq(i).innerText;
-                                                    }
-                                                    return temps;
-                                                });
-
-
+                                            var tem= casper.evaluate(function () {
+                                                var title = $(".listen_text.share_title").text();
+                                                return title+'====='+$("p").text();
+                                            });
+                                            console.log('=========='+tem);
                                         });
-                                        this.run();
-                                        console.log("kkkkkkkk"+ttt);
                                     }
                                 });
                             //});
